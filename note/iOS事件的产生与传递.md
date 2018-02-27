@@ -24,6 +24,7 @@
 * 返回`nil`则说明没有找到最合适的子控件，则父控件为最合适的视图
 
 ## UIResponder
+* 继承自UIResponder的对象才可以响应事件
 * 处理触摸事件的方法
 
 ```touch method
@@ -37,3 +38,14 @@ func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?)
 ```
 * [UITouch](https://developer.apple.com/documentation/uikit/uitouch)有一个触摸的所有信息，触摸的视图、点击的次数等
 * 一个事件的传递是从父控件到子控件的（`从上到下`），而一个事件的响应这事从子控件到父控件向上传递的（`从下到上`）
+
+### 总结
+> 一个事件的处理有事件的传递与事件的响应两个过程。
+
+1. 首先，事件发生后，事件会从父控件传递给子控件，也就是寻找最合适的View
+2. 接下来是事件的响应，找到最合适的View之后，首先看能否处理这个时间，若不能处理则交给上级视图`superView`，若上级视图也无法处理则继续向上传递，一直传递到`viewController`，若·`viewController`的根视图也无法处理则继续向上传递，如果控制器有父控制器则传递给父控制器，否则交给`window`，若`window`也无法处理则交给`application`，最后`application`也无法处理则丢弃
+	* `view -> superView -> viewController ->superViewController -> window -> application`
+
+3. 在事件的响应中，若某个空间实现了`UIResponder`的相关方法，则该事件由该控件来接受
+
+
