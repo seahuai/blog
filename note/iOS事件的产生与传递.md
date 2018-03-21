@@ -43,9 +43,40 @@ func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?)
 > 一个事件的处理有事件的传递与事件的响应两个过程。
 
 1. 首先，事件发生后，事件会从父控件传递给子控件，也就是寻找最合适的View
-2. 接下来是事件的响应，找到最合适的View之后，首先看能否处理这个时间，若不能处理则交给上级视图`superView`，若上级视图也无法处理则继续向上传递，一直传递到`viewController`，若·`viewController`的根视图也无法处理则继续向上传递，如果控制器有父控制器则传递给父控制器，否则交给`window`，若`window`也无法处理则交给`application`，最后`application`也无法处理则丢弃
+2. 接下来是事件的响应，找到最合适的View之后，首先看能否处理这个事件，若不能处理则交给上级视图`superView`，若上级视图也无法处理则继续向上传递，一直传递到`viewController`，若·`viewController`的根视图也无法处理则继续向上传递，如果控制器有父控制器则传递给父控制器，否则交给`window`，若`window`也无法处理则交给`application`，最后`application`也无法处理则丢弃
 	* `view -> superView -> viewController ->superViewController -> window -> application`
 
-3. 在事件的响应中，若某个空间实现了`UIResponder`的相关方法，则该事件由该控件来接受
+3. 在事件的响应中，若某个控件实现了`UIResponder`的相关方法，则该事件由该控件来接受
 
 
+### UIControl 和 UIResponder
+> UIControl是UIButton等控件的父类
+
+* 每个`UIControl`对象都可能触发控件事件，每个可能触发的事件都有对应的事件常量`UIControlEvents`。
+* `UIResponder`方法是怎么触发控件事件的，`UIButton`触发`.touchUpInside`事件：
+
+```swift
+UIButton中:
+override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        // 获取触摸结束时的位置touchPoint
+        guaed let touch = touches.first else { return }
+        let touchPoint = touch.location(in: self)
+        // 判断touchPoint是否在视图的bounds中
+        if bounds.contains(touchPoint) {
+        	// 该方法向注册了 .touchUpInside 的事件的所有目标对象发送消息
+        	self.sendActions(for: .touchUpInside)
+        }else {
+        	self.sendAcitons(for: .touchUpOutside)
+        }
+}
+
+
+```
+
+* `func sendActions(for controlEvents: UIControlEvents)`该方法会遍历`UIControl`对象所有的目标和动作，根据传入的事件类型进行查找，然后向匹配目标对象发送对应的动作消息。
+
+
+### UIGestureRecognizer
+
+* `UIGestureRecognizer`会截取触摸事件
+* 我认为手势识别中也有一套和`UIResponder`类似的方法用于对不同的手势进行区分。
