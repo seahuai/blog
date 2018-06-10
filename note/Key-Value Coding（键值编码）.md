@@ -76,3 +76,29 @@ NSMutableArray *mutableNames = [person mutableArrayValueForKey:@"friendNames"];
 
 针对集合的一些操作，可以在键路径中加入集合操作符来对集合中的值做计算。
 可以阅读[文档](https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/KeyValueCoding/CollectionOperators.html#//apple_ref/doc/uid/20002176-BAJEAIEE)。
+
+#### KVC寻找属性值的顺序
+
+调用`valueForKey:`时，我们将一个字符串`<key>`作为输入，然后得到对应的输出。
+
+1. 首先，搜索对象中的所有实例方法，按顺序搜索形如`get<Key>`, `<key>`, `is<Key>`, `_<key>`的方法，通过这个方法获得对应的值之后，跳转到5。
+2. 寻找对象中符合`countOf<Key>`， `objectIn<Key>AtIndex:` 和 `<key>sAtIndexes:` 格式的方法，只要调用者满足第一个方法和后两个方法的其中之一，将会创建一个集合对象`NSKeyValueArray`，该集合对象可以通过组合上述方法来响应任何`NSArray`的方法，并作为结果，跳转到5。
+3. 如果对象同时满足了`countOf<Key>`, `enumeratorOf<Key>`, 和 `memberOf<Key>:`三个方法，将会创建一个集合对象，该集合对象可以响应`NSSet`的方法，并作为结果，跳转到5。
+4. 2和3都不满足的话，如果调用者的类方法`accessInstanceVariablesDirectly`返回`YES`，寻找对象中实例变量，形如`_<key>`, `_is<Key>`, `<key>`, `is<Key>`，按顺序找到其中之一，作为结果跳转到5，否则跳转到6。
+5. 如果获取的到结果是对象的指针，则直接返回结果。结果为常量的话，且`NSNumber`支持，使用`NSNumber`封装成对象后返回该对象。否则使用`NSValue`封装成对象后返回。
+
+调用`mutableArrayValueForKey:`时，我们将一个字符串`<key>`作为输入，然后得到对应的`NSMutableArray`作为输出。
+
+1. 在对象中找到一对方法`insertObject:in<Key>AtIndex:`和`removeObjectFrom<Key>AtIndex:`，该`mutableArray`对象能够通过组合调用这一对方法来响应`NSMutableArray`的各种方法。
+2. 如果该对象没有修改array的方法，且有`set<Key>:`方法，返回对应的属性值，并且每次修改`mutableArray`后，都会调用该方法给对象中的不可变数组重新赋值，效率较低。
+3. 如果1和2都不符合条件，且类方法`accessInstanceVariablesDirectly`返回`YES`，按顺序查找`_<key>`或者`<key>`实例变量，若找到则返回一个代理对象，用来转发`NSMutableArray`的消息。该对象会接收到一个`NSMutableArray`的实例（或者是`NSMutableArray`的子类）。
+4. 如果所有条件都不符合，返回一个代理对象，向调用者发送`setValue:forUndefinedKey:`消息。
+
+其它`mutable`方法的实现类似。
+
+#### KVC给属性赋值的顺序
+调用`setValue:forKey:`时，我们将一个`<value>`和`<key>`作为输入，然后将`<value>`赋值给对象中名为`<key>`的变量。
+
+1. 寻找对象中`<key>`的`setter`方法，`set<Key>:`或者是 `_set<Key>`，按顺序找到后，传入`<value>`作为方法参数，方法返回。否则进行下一步。
+2. 没有找到对应的方法，并且调用者的类方法`accessInstanceVariablesDirectly`返回`YES`，寻找对象中实例变量，形如`_<key>`, `_is<Key>`, `<key>`, `is<Key>`，按顺序找到其中之一，对其赋值`<value>`，方法返回。否则进行下一步。
+3. 没有找到和`<key>`对应的属性值，调用`setValue:forUndefinedKey:`方法，传入`<value>`和`<key>`。
