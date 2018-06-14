@@ -12,7 +12,9 @@ class ViewController: UIViewController {
     
     var images = ["Yosemite 1", "Yosemite 2", "Yosemite 3", "Yosemite 4", "Yosemite 5",
                   "Yosemite 1", "Yosemite 2", "Yosemite 3", "Yosemite 4", "Yosemite 5",
+                  "Yosemite 1", "Yosemite 2", "Yosemite 3", "Yosemite 4", "Yosemite 5",
                   "Yosemite 1", "Yosemite 2", "Yosemite 3", "Yosemite 4", "Yosemite 5"]
+    
     var imageCache = [IndexPath: UIImage]()
     
     var serialQueue: DispatchQueue!
@@ -91,9 +93,16 @@ extension ViewController: UICollectionViewDataSource {
             cell.imageView.image = downsampledImage
         }
         else {
+            
+            /* 使用该读取方法内存飙升
             let imagePath = Bundle.main.path(forResource: self.images[indexPath.item], ofType: "jpg")!
             let image = UIImage(contentsOfFile: imagePath)
             cell.imageView.image = image
+            */
+            
+            let imageURL = self.imageURL(self.images[indexPath.item])
+            let downsampledImage = self.downsample(imageAt: imageURL, to: CGSize(width: 1024, height: 1024), scale: 1.0)
+            cell.imageView.image = downsampledImage
         }
         return cell
     }
