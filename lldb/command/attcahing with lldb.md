@@ -24,3 +24,7 @@
 1. after attaching a process with lldb,use `env` to display all the enviroment variables
 2. launch with `-v` option to set the enviroment variables
 3. example:`process launch -v LSCOLORS=Ab -v CLICOLOR=1  -- /Applications/`
+
+#### relanuch application
+
+1. `run` - relaunch application without Xcode having to recompile

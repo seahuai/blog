@@ -16,7 +16,7 @@
 
 * 正则搜索 
  `image lookup App.ClassName.property.setter`
- 
+
 * `rlook test` 等价于 `image lookup -rn abc`
 
 	
@@ -38,8 +38,6 @@
 例子：
 
 ```2
-(lldb) command regex -- tv 's/(.+)/expression -l objc -O -- @import QuartzCore; [%1 setHidden:!(BOOL)[%1 isHidden]]; (void)[CATransaction flush];/”
-
-“Advanced Apple Debugging”
+(lldb) command regex -- tv 's/(.+)/expression -l objc -O -- @import QuartzCore; [%1 setHidden:!(BOOL)[%1 isHidden]]; (void)[CATransaction flush];/
 ```
 
